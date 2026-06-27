@@ -13,7 +13,7 @@ class VerisApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Baby Log',
+      title: 'Veris',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
