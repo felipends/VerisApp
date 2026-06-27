@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/activity_type.dart';
+import '../activity_strings.dart';
 import '../activity_type_icon.dart';
 
 class QuickActionButton extends StatelessWidget {
@@ -17,24 +18,25 @@ class QuickActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return SizedBox(
       width: double.infinity,
       height: 68,
       child: FilledButton.icon(
         onPressed: enabled ? onTap : null,
         icon: Icon(type.icon, size: 20),
-        label: Text(type.label),
+        label: Text(ActivityStrings.of(context).activityType(type)),
         style: FilledButton.styleFrom(
           elevation: 0,
           shadowColor: Colors.transparent,
           surfaceTintColor: Colors.transparent,
-          backgroundColor: const Color(0xFFEAF8F7),
-          disabledBackgroundColor: const Color(0xFFF4F5F7),
-          foregroundColor: const Color(0xFF1F2933),
-          disabledForegroundColor: const Color(0xFFB0B7C3),
+          backgroundColor: colors.primaryContainer.withValues(alpha: 0.55),
+          disabledBackgroundColor: colors.surfaceContainerHighest,
+          foregroundColor: colors.onPrimaryContainer,
+          disabledForegroundColor: colors.onSurfaceVariant,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(color: Color(0xFFDDEAE8)),
+            side: BorderSide(color: colors.primary.withValues(alpha: 0.16)),
           ),
           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),

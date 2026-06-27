@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:veris/features/activities/data/activity_repository.dart';
@@ -8,8 +9,106 @@ import 'package:veris/features/activities/domain/activity_type.dart';
 import 'package:veris/features/activities/domain/baby_activity.dart';
 import 'package:veris/features/activities/presentation/activity_controller.dart';
 import 'package:veris/features/activities/presentation/activity_grouping.dart';
+import 'package:veris/features/app_shell/domain/app_language_option.dart';
+import 'package:veris/features/app_shell/domain/app_theme_option.dart';
+import 'package:veris/features/app_shell/domain/baby_profile.dart';
 
 void main() {
+  test('BabyReferenceService resolves name and sex references', () {
+    const service = BabyReferenceService();
+    final now = DateTime(2026, 6, 27);
+
+    expect(
+      service.referenceFor(BabyProfile.empty(now: now).copyWith(name: ' Lia ')),
+      'Lia',
+    );
+    expect(
+      service.referenceFor(
+        BabyProfile.empty(now: now).copyWith(sex: BabySex.female),
+      ),
+      'A bebê',
+    );
+    expect(
+      service.referenceFor(
+        BabyProfile.empty(now: now).copyWith(sex: BabySex.male),
+      ),
+      'O bebê',
+    );
+    expect(
+      service.referenceFor(
+        BabyProfile.empty(now: now).copyWith(sex: BabySex.notInformed),
+      ),
+      'O bebê',
+    );
+    expect(service.referenceFor(null), 'O bebê');
+  });
+
+  test('AppThemeService resolves default and configured palettes', () {
+    const service = AppThemeService();
+
+    expect(
+      service.paletteFor(AppThemeOption.defaultTheme).primary.toARGB32(),
+      0xFF69D6D2,
+    );
+    expect(
+      service.paletteFor(AppThemeOption.babyBlue).background.toARGB32(),
+      0xFFF7FBFF,
+    );
+    expect(
+      service.themeDataFor(AppThemeOption.lightPink).primaryColor.toARGB32(),
+      0xFFFFC9D6,
+    );
+  });
+
+  test('AppLocaleService resolves system, manual, and fallback locales', () {
+    const service = AppLocaleService();
+
+    expect(service.localeFor(AppLanguageOption.system), isNull);
+    expect(service.localeFor(AppLanguageOption.pt)?.languageCode, 'pt');
+    expect(service.localeFor(AppLanguageOption.en)?.languageCode, 'en');
+    expect(
+      service
+          .resolve(const Locale('en', 'US'), AppLocaleService.supportedLocales)
+          .languageCode,
+      'en',
+    );
+    expect(
+      service
+          .resolve(const Locale('es'), AppLocaleService.supportedLocales)
+          .languageCode,
+      'pt',
+    );
+    expect(
+      service.resolve(null, AppLocaleService.supportedLocales).languageCode,
+      'pt',
+    );
+  });
+
+  test('BabyReferenceService validates future date and month range', () {
+    const service = BabyReferenceService();
+    final now = DateTime(2026, 6, 27);
+
+    expect(
+      () => service.validateAge(
+        birthDate: now.add(const Duration(days: 1)),
+        now: now,
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => service.validateAge(ageInMonths: -1, now: now),
+      throwsArgumentError,
+    );
+    expect(
+      () => service.validateAge(ageInMonths: 37, now: now),
+      throwsArgumentError,
+    );
+    expect(
+      () => service.validateAge(ageInMonths: 36, now: now),
+      returnsNormally,
+    );
+  });
+
   test('ActivityType exposes Portuguese labels', () {
     expect(ActivityType.feeding.label, 'Mamou');
     expect(ActivityType.sleepStarted.label, 'Dormiu');

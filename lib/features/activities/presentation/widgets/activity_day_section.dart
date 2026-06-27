@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/baby_activity.dart';
 import '../activity_grouping.dart';
+import '../activity_strings.dart';
 import 'activity_list_item.dart';
 
 class ActivityDaySection extends StatelessWidget {
@@ -16,13 +17,14 @@ class ActivityDaySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = ActivityStrings.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            group.title,
+            _localizedTitle(group.title, strings),
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: const Color(0xFF7B8794),
               fontWeight: FontWeight.w700,
@@ -41,4 +43,11 @@ class ActivityDaySection extends StatelessWidget {
       ),
     );
   }
+
+  String _localizedTitle(String title, ActivityStrings strings) =>
+      switch (title) {
+        'Hoje' => strings.today,
+        'Ontem' => strings.yesterday,
+        _ => title,
+      };
 }

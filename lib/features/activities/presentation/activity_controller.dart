@@ -29,7 +29,7 @@ class ActivityController extends ChangeNotifier {
     try {
       activities = await repository.load();
     } catch (_) {
-      errorMessage = 'Nao foi possivel carregar as atividades.';
+      errorMessage = 'Não foi possível carregar as atividades.';
     } finally {
       isLoading = false;
       notifyListeners();
@@ -57,7 +57,7 @@ class ActivityController extends ChangeNotifier {
       errorMessage = null;
       return activity;
     } catch (_) {
-      errorMessage = 'Nao foi possivel salvar. Tente novamente.';
+      errorMessage = 'Não foi possível salvar. Tente novamente.';
       return null;
     } finally {
       _savingTypes.remove(type);
@@ -79,7 +79,7 @@ class ActivityController extends ChangeNotifier {
       errorMessage = null;
       return saved;
     } catch (_) {
-      errorMessage = 'Nao foi possivel atualizar. Tente novamente.';
+      errorMessage = 'Não foi possível atualizar. Tente novamente.';
       return null;
     } finally {
       isSaving = false;
@@ -97,7 +97,7 @@ class ActivityController extends ChangeNotifier {
       errorMessage = null;
       return true;
     } catch (_) {
-      errorMessage = 'Nao foi possivel excluir. Tente novamente.';
+      errorMessage = 'Não foi possível excluir. Tente novamente.';
       return false;
     } finally {
       isSaving = false;
