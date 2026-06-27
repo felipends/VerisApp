@@ -1,30 +1,37 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:veris/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:veris/app.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
   });
+
+  testWidgets('shows empty state', (tester) async {
+    await tester.pumpWidget(const VerisApp());
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'Nenhuma atividade registrada hoje.\nUse os botoes acima para registrar a primeira.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  for (final label in ['Mamou', 'Dormiu', 'Acordou']) {
+    testWidgets('tapping $label adds activity and shows SnackBar', (
+      tester,
+    ) async {
+      await tester.pumpWidget(const VerisApp());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(label).first);
+      await tester.pump();
+
+      expect(find.text('$label registrado agora'), findsOneWidget);
+      expect(find.text('Hoje'), findsWidgets);
+      expect(find.text(label), findsWidgets);
+    });
+  }
 }
