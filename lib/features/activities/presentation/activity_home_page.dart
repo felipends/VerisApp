@@ -24,7 +24,19 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        title: Image.asset(
+          'assets/images/veris_logo.png',
+          height: 40,
+          semanticLabel: 'Veris',
+        ),
+      ),
       body: SafeArea(
+        top: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final horizontalPadding = constraints.maxWidth > 420 ? 32.0 : 24.0;
