@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/activity_summary.dart';
+import '../activity_strings.dart';
 
 class DailySummaryCard extends StatelessWidget {
   const DailySummaryCard({super.key, required this.summary});
@@ -9,6 +10,7 @@ class DailySummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = ActivityStrings.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -21,28 +23,35 @@ class DailySummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Resumo do dia',
+            strings.dailySummary,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: const Color(0xFF7B8794),
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
-          _SummaryRow(label: 'Última mamada', value: _feedingValue()),
+          _SummaryRow(
+            label: strings.lastFeeding,
+            value: _feedingValue(strings),
+          ),
           const SizedBox(height: 10),
           _SummaryRow(
-            label: 'Sonecas hoje',
+            label: strings.napsToday,
             value: '${summary.completedNapsToday}',
           ),
           const SizedBox(height: 10),
-          _SummaryRow(label: 'Fraldas hoje', value: '${summary.diapersToday}'),
+          _SummaryRow(
+            label: strings.diapersToday,
+            value: '${summary.diapersToday}',
+          ),
         ],
       ),
     );
   }
 
-  String _feedingValue() => summary.lastFeedingToday == null
-      ? 'Ainda não registrada'
+  String _feedingValue(ActivityStrings strings) =>
+      summary.lastFeedingToday == null
+      ? strings.notRecordedYet
       : _time(summary.lastFeedingToday!.occurredAt);
 
   String _time(DateTime value) =>

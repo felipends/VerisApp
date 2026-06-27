@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../domain/activity_type.dart';
 import '../../domain/baby_activity.dart';
 import '../activity_controller.dart';
+import '../activity_strings.dart';
 
 Future<void> showEditActivitySheet({
   required BuildContext context,
@@ -66,6 +67,7 @@ class _EditActivitySheetState extends State<EditActivitySheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final strings = ActivityStrings.of(context);
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
       child: AnimatedBuilder(
@@ -89,21 +91,23 @@ class _EditActivitySheetState extends State<EditActivitySheet> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Editar atividade',
+                  strings.isEnglish ? 'Edit activity' : 'Editar atividade',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Ajuste o que estiver errado e salve.',
+                  strings.isEnglish
+                      ? 'Adjust anything that is wrong and save.'
+                      : 'Ajuste o que estiver errado e salve.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: const Color(0xFF7B8794),
                   ),
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Tipo',
+                  strings.isEnglish ? 'Type' : 'Tipo',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: const Color(0xFF5F6B7A),
                     fontWeight: FontWeight.w700,
@@ -116,7 +120,7 @@ class _EditActivitySheetState extends State<EditActivitySheet> {
                   children: ActivityType.values
                       .map(
                         (type) => ChoiceChip(
-                          label: Text(type.label),
+                          label: Text(strings.activityType(type)),
                           selected: _type == type,
                           onSelected: busy
                               ? null
@@ -136,14 +140,14 @@ class _EditActivitySheetState extends State<EditActivitySheet> {
                 ),
                 const SizedBox(height: 18),
                 _ActionField(
-                  label: 'Data',
+                  label: strings.isEnglish ? 'Date' : 'Data',
                   value: _dateLabel(context),
                   icon: Icons.calendar_today_outlined,
                   onTap: busy ? null : _pickDate,
                 ),
                 const SizedBox(height: 12),
                 _ActionField(
-                  label: 'Horário',
+                  label: strings.isEnglish ? 'Time' : 'Horário',
                   value: _timeLabel(context),
                   icon: Icons.schedule_outlined,
                   onTap: busy ? null : _pickTime,
@@ -154,9 +158,13 @@ class _EditActivitySheetState extends State<EditActivitySheet> {
                   enabled: !busy,
                   maxLines: 2,
                   maxLength: 80,
-                  decoration: const InputDecoration(
-                    labelText: 'Observação (opcional)',
-                    hintText: 'Ex.: mamou pouco',
+                  decoration: InputDecoration(
+                    labelText: strings.isEnglish
+                        ? 'Note (optional)'
+                        : 'Observação (opcional)',
+                    hintText: strings.isEnglish
+                        ? 'E.g.: fed a little'
+                        : 'Ex.: mamou pouco',
                     counterText: '',
                   ),
                 ),
@@ -166,7 +174,13 @@ class _EditActivitySheetState extends State<EditActivitySheet> {
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(54),
                   ),
-                  child: Text(busy ? 'Salvando...' : 'Salvar alterações'),
+                  child: Text(
+                    busy
+                        ? (strings.isEnglish ? 'Saving...' : 'Salvando...')
+                        : (strings.isEnglish
+                              ? 'Save changes'
+                              : 'Salvar alterações'),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 OutlinedButton(
@@ -176,7 +190,9 @@ class _EditActivitySheetState extends State<EditActivitySheet> {
                     foregroundColor: const Color(0xFFB42318),
                     side: const BorderSide(color: Color(0xFFF2B8B5)),
                   ),
-                  child: const Text('Excluir atividade'),
+                  child: Text(
+                    strings.isEnglish ? 'Delete activity' : 'Excluir atividade',
+                  ),
                 ),
               ],
             ),
@@ -244,16 +260,28 @@ class _EditActivitySheetState extends State<EditActivitySheet> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Excluir atividade?'),
-        content: const Text('Essa ação não pode ser desfeita.'),
+        title: Text(
+          ActivityStrings.of(context).isEnglish
+              ? 'Delete activity?'
+              : 'Excluir atividade?',
+        ),
+        content: Text(
+          ActivityStrings.of(context).isEnglish
+              ? 'This action cannot be undone.'
+              : 'Essa ação não pode ser desfeita.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(
+              ActivityStrings.of(context).isEnglish ? 'Cancel' : 'Cancelar',
+            ),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Excluir'),
+            child: Text(
+              ActivityStrings.of(context).isEnglish ? 'Delete' : 'Excluir',
+            ),
           ),
         ],
       ),
@@ -266,9 +294,15 @@ class _EditActivitySheetState extends State<EditActivitySheet> {
     setState(() => _working = false);
 
     if (deleted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Atividade excluída')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ActivityStrings.of(context).isEnglish
+                ? 'Activity deleted'
+                : 'Atividade excluída',
+          ),
+        ),
+      );
       Navigator.of(context).pop();
       return;
     }

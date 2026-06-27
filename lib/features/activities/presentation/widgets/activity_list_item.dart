@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/baby_activity.dart';
+import '../activity_strings.dart';
 import '../activity_type_icon.dart';
 
 class ActivityListItem extends StatelessWidget {
@@ -79,7 +80,9 @@ class ActivityListItem extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            activity.type.label,
+                            ActivityStrings.of(
+                              context,
+                            ).activityType(activity.type),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,

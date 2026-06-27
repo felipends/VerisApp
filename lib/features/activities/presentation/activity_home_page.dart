@@ -6,6 +6,10 @@ import '../domain/activity_summary.dart';
 import '../domain/activity_type.dart';
 import '../domain/baby_activity.dart';
 import 'activity_controller.dart';
+import '../../app_shell/presentation/app_drawer.dart';
+import '../../app_shell/presentation/app_shell_controller.dart';
+import '../../app_shell/presentation/settings_page.dart';
+import 'activity_strings.dart';
 import 'widgets/activity_timeline.dart';
 import 'widgets/current_status_card.dart';
 import 'widgets/daily_summary_card.dart';
@@ -13,9 +17,14 @@ import 'widgets/edit_activity_sheet.dart';
 import 'widgets/quick_action_button.dart';
 
 class ActivityHomePage extends StatefulWidget {
-  const ActivityHomePage({super.key, required this.controller});
+  const ActivityHomePage({
+    super.key,
+    required this.controller,
+    required this.appShellController,
+  });
 
   final ActivityController controller;
+  final AppShellController appShellController;
 
   @override
   State<ActivityHomePage> createState() => _ActivityHomePageState();
@@ -33,6 +42,18 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: AppDrawer(
+        controller: widget.appShellController,
+        onSettingsTap: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) =>
+                  SettingsPage(controller: widget.appShellController),
+            ),
+          );
+        },
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -45,6 +66,10 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
                   builder: (context, _) {
                     final activities = widget.controller.activities;
                     final summary = _summaryService.calculate(activities);
+                    final strings = ActivityStrings.of(context);
+                    final babyReference = strings.babyReference(
+                      widget.appShellController.profile,
+                    );
                     return ListView(
                       padding: EdgeInsets.fromLTRB(
                         horizontalPadding,
@@ -53,8 +78,20 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
                         32,
                       ),
                       children: [
+                        Row(
+                          children: [
+                            Builder(
+                              builder: (context) => IconButton(
+                                onPressed: () =>
+                                    Scaffold.of(context).openDrawer(),
+                                icon: const Icon(Icons.menu),
+                                tooltip: 'Menu',
+                              ),
+                            ),
+                          ],
+                        ),
                         Text(
-                          'Atividade do bebê',
+                          strings.activityTitle(babyReference),
                           style: Theme.of(context).textTheme.headlineMedium
                               ?.copyWith(
                                 fontSize: 30,
@@ -63,12 +100,19 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          _todayLabel(),
+                          _todayLabel(context),
                           style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: const Color(0xFF7B8794)),
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                         const SizedBox(height: 28),
-                        CurrentStatusCard(summary: summary),
+                        CurrentStatusCard(
+                          summary: summary,
+                          babyReference: babyReference,
+                        ),
                         const SizedBox(height: 14),
                         DailySummaryCard(summary: summary),
                         const SizedBox(height: 20),
@@ -107,7 +151,7 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
     final activity = await widget.controller.add(type);
     if (!mounted) return;
     if (activity != null) {
-      _showFeedbackSnackBar('${type.label} registrado agora');
+      _showFeedbackSnackBar(ActivityStrings.of(context).registeredNow(type));
       return;
     }
 
@@ -141,8 +185,8 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
     );
   }
 
-  String _todayLabel() {
+  String _todayLabel(BuildContext context) {
     final now = DateTime.now();
-    return 'Hoje, ${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
+    return '${ActivityStrings.of(context).today}, ${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
   }
 }
