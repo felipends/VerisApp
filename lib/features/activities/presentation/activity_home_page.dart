@@ -1,8 +1,15 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
+import '../domain/activity_summary.dart';
 import '../domain/activity_type.dart';
+import '../domain/baby_activity.dart';
 import 'activity_controller.dart';
 import 'widgets/activity_timeline.dart';
+import 'widgets/current_status_card.dart';
+import 'widgets/daily_summary_card.dart';
+import 'widgets/edit_activity_sheet.dart';
 import 'widgets/quick_action_button.dart';
 
 class ActivityHomePage extends StatefulWidget {
@@ -15,6 +22,8 @@ class ActivityHomePage extends StatefulWidget {
 }
 
 class _ActivityHomePageState extends State<ActivityHomePage> {
+  static const _summaryService = ActivitySummaryService();
+
   @override
   void initState() {
     super.initState();
@@ -24,19 +33,7 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        title: Image.asset(
-          'assets/images/veris_logo.png',
-          height: 40,
-          semanticLabel: 'Veris',
-        ),
-      ),
       body: SafeArea(
-        top: false,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final horizontalPadding = constraints.maxWidth > 420 ? 32.0 : 24.0;
@@ -46,7 +43,8 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
                 child: AnimatedBuilder(
                   animation: widget.controller,
                   builder: (context, _) {
-                    final last = widget.controller.activities.firstOrNull;
+                    final activities = widget.controller.activities;
+                    final summary = _summaryService.calculate(activities);
                     return ListView(
                       padding: EdgeInsets.fromLTRB(
                         horizontalPadding,
@@ -56,7 +54,7 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
                       ),
                       children: [
                         Text(
-                          'Baby Log',
+                          'Atividade do bebê',
                           style: Theme.of(context).textTheme.headlineMedium
                               ?.copyWith(
                                 fontSize: 30,
@@ -70,44 +68,27 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
                               ?.copyWith(color: const Color(0xFF7B8794)),
                         ),
                         const SizedBox(height: 28),
-                        Text(
-                          'Última atividade',
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                color: const Color(0xFF7B8794),
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          last == null
-                              ? 'Nenhum registro ainda'
-                              : '${last.type.label} às ${_time(last.occurredAt)}',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 28),
+                        CurrentStatusCard(summary: summary),
+                        const SizedBox(height: 14),
+                        DailySummaryCard(summary: summary),
+                        const SizedBox(height: 20),
                         ...ActivityType.values.map(
                           (type) => Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: QuickActionButton(
                               type: type,
+                              enabled:
+                                  !widget.controller.isActionDisabled &&
+                                  !widget.controller.isTypeSaving(type),
                               onTap: () => _add(type),
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
-                        if (widget.controller.errorMessage case final message?)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Text(
-                              message,
-                              style: const TextStyle(color: Colors.redAccent),
-                            ),
-                          ),
                         ActivityTimeline(
-                          activities: widget.controller.activities,
+                          activities: activities,
                           isLoading: widget.controller.isLoading,
+                          onActivityTap: _openEditSheet,
                         ),
                       ],
                     );
@@ -122,16 +103,41 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
   }
 
   Future<void> _add(ActivityType type) async {
+    final previousError = widget.controller.errorMessage;
     final activity = await widget.controller.add(type);
     if (!mounted) return;
+    if (activity != null) {
+      _showFeedbackSnackBar('${type.label} registrado agora');
+      return;
+    }
+
+    final currentError = widget.controller.errorMessage;
+    if (currentError != null && currentError != previousError) {
+      _showFeedbackSnackBar(currentError);
+    }
+  }
+
+  void _showFeedbackSnackBar(String message) {
+    final snackBarWidth = math.min(
+      MediaQuery.sizeOf(context).width - 48,
+      320.0,
+    );
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          activity == null
-              ? 'Erro ao registrar'
-              : '${type.label} registrado agora',
-        ),
+        behavior: SnackBarBehavior.floating,
+        width: snackBarWidth,
+        shape: const StadiumBorder(),
+        content: Text(message, textAlign: TextAlign.center),
       ),
+    );
+  }
+
+  Future<void> _openEditSheet(BabyActivity activity) async {
+    await showEditActivitySheet(
+      context: context,
+      controller: widget.controller,
+      activity: activity,
     );
   }
 
@@ -139,7 +145,4 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
     final now = DateTime.now();
     return 'Hoje, ${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
   }
-
-  String _time(DateTime date) =>
-      '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 }
