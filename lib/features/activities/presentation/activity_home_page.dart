@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../domain/activity_summary.dart';
@@ -105,18 +107,30 @@ class _ActivityHomePageState extends State<ActivityHomePage> {
     final activity = await widget.controller.add(type);
     if (!mounted) return;
     if (activity != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${type.label} registrado agora')));
+      _showFeedbackSnackBar('${type.label} registrado agora');
       return;
     }
 
     final currentError = widget.controller.errorMessage;
     if (currentError != null && currentError != previousError) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(currentError)));
+      _showFeedbackSnackBar(currentError);
     }
+  }
+
+  void _showFeedbackSnackBar(String message) {
+    final snackBarWidth = math.min(
+      MediaQuery.sizeOf(context).width - 48,
+      320.0,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        width: snackBarWidth,
+        shape: const StadiumBorder(),
+        content: Text(message, textAlign: TextAlign.center),
+      ),
+    );
   }
 
   Future<void> _openEditSheet(BabyActivity activity) async {
