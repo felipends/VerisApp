@@ -9,10 +9,12 @@ class ActivityTimeline extends StatelessWidget {
     super.key,
     required this.activities,
     required this.isLoading,
+    required this.onActivityTap,
   });
 
   final List<BabyActivity> activities;
   final bool isLoading;
+  final ValueChanged<BabyActivity> onActivityTap;
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +36,12 @@ class ActivityTimeline extends StatelessWidget {
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: groupActivitiesByDay(
-        activities,
-      ).map((group) => ActivityDaySection(group: group)).toList(),
+      children: groupActivitiesByDay(activities)
+          .map(
+            (group) =>
+                ActivityDaySection(group: group, onActivityTap: onActivityTap),
+          )
+          .toList(),
     );
   }
 }

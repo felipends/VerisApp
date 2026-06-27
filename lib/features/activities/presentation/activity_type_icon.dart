@@ -7,5 +7,6 @@ extension ActivityTypeIcon on ActivityType {
     ActivityType.feeding => Icons.water_drop_outlined,
     ActivityType.sleepStarted => Icons.nightlight_round,
     ActivityType.sleepEnded => Icons.wb_sunny_outlined,
+    ActivityType.diaper => Icons.child_care_outlined,
   };
 }
